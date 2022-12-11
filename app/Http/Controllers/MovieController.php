@@ -1,0 +1,143 @@
+<?php
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use App\Models\Movie_model;
+use Illuminate\Http\Request;
+use DB;
+use Validator;
+
+class MovieController extends Controller
+{
+    public function getList()
+    {
+        $datum = Movie_model::get()
+            ->transform(function ($item) {
+                $new_array = (object) [
+                    "id" => $item->id,
+                    "title" => $item->title,
+                    "description" => $item->description,
+                    "rating" => $item->rating,
+                    "image" => $item->image ? $item->image : "",
+                    "created_at" => date("Y-m-d H:i:s", strtotime($item->created_at)),
+                    "updated_at" => date("Y-m-d H:i:s", strtotime($item->updated_at))
+                ];
+
+                return $new_array;
+            })
+            ->all();
+        return response()->json($datum, 200);
+    }
+
+    public function getDetail($id)
+    {
+        if(!$id) return response()->json(["error" => "Harap masukkan id"]);
+        
+        $data = Movie_model::where("id",$id)->first();
+        if(!$data) return response()->json(["error" => "Movie tidak ditemukan"]);
+        $detail = [
+            "id" => $data->id,
+            "title" => $data->title,
+            "description" => $data->description,
+            "rating" => $data->rating,
+            "image" => $data->image ? $data->image : "",
+            "created_at" => date("Y-m-d H:i:s", strtotime($data->created_at)),
+            "updated_at" => date("Y-m-d H:i:s", strtotime($data->updated_at))
+        ];
+        return response()->json([$detail], 200);
+    }
+
+    public function addMovie(Request $request){
+        $validator = Validator::make($request->all(), [
+            'title' => 'bail|required|max:100',
+            'description' => 'bail|required|max:255',
+            'rating' => 'bail|required|numeric|max:10'
+        ]);
+        if ($validator->fails()) {
+            return response()->json(["error" => $validator->errors()->first()], 422);
+        }
+        try {
+            DB::beginTransaction();
+
+            $movie = new Movie_model;
+            $movie->title = $request->input("title");
+            $movie->description = $request->input("description");
+            $movie->rating = $request->input("rating");
+            $movie->save();
+            
+            $response = [
+                'success' => true,
+                'data_saved' =>$movie
+            ];
+            DB::commit();
+
+            return response()->json($response,200);
+        }
+        catch(\Exception $e) {
+            DB::rollback();
+            \Log::info($e);
+            return response()->json(["error" => "Insert gagal"]);
+        }
+    }
+
+    public function updateMovie(Request $request,$id){
+        $validator = Validator::make($request->all(), [
+            'title' => 'bail|required|max:100',
+            'description' => 'bail|required|max:255',
+            'rating' => 'bail|required|numeric|max:10'
+        ]);
+        if ($validator->fails()) {
+            return response()->json(["error" => $validator->errors()->first()], 422);
+        }
+        
+        if(!$id) return response()->json(["error" => "Harap masukkan id"]);
+        
+        $movie = Movie_model::where("id",$id)->first();
+        if(!$movie) return response()->json(["error" => "Movie tidak ditemukan"]);
+
+        try {
+            DB::beginTransaction();
+
+            $movie->title = $request->input("title");
+            $movie->description = $request->input("description");
+            $movie->rating = $request->input("rating");
+            $movie->save();
+            
+            $response = [
+                'success' => true,
+                'data_saved' =>$movie
+            ];
+            DB::commit();
+
+            return response()->json($response,200);
+        }
+        catch(\Exception $e) {
+            DB::rollback();
+            \Log::info($e);
+            return response()->json(["error" => "Update gagal"]);
+        }
+    }
+
+    public function deleteMovie($id){
+        if(!$id) return response()->json(["error" => "Harap masukkan id"]);
+        try {
+            DB::beginTransaction();
+
+            Movie_model::find($id)->delete();
+            
+            $response = [
+                'success' => true,
+                'deleted_id' =>$id
+            ];
+
+            DB::commit(); 
+            return response()->json($response,200);
+
+        }
+        catch(\Exception $e) {
+            DB::rollback();
+            \Log::info($e);
+            return response()->json(["error" => "Delete gagal"]);
+        }
+    }
+}
