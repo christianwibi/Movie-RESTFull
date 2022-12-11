@@ -17,8 +17,8 @@ php artisan test
 
 # Notes
 Note for POST, PATCH, and DELETE methods require X-CSRF-TOKEN.
-So if you hit it from external, need to add X-CSRF-TOKEN the in the header.
-add key X-CSRF-TOKEN,
-add value {TOKEN},
+So if you hit it from external, need to add X-CSRF-TOKEN the in the header: <br/>
+add key X-CSRF-TOKEN<br/>
+add value {TOKEN}<br/>
 You can get TOKEN from API: 
 GET http://127.0.0.1:8000/token
