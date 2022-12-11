@@ -7,8 +7,8 @@ composer<br/>
 mySQL (with db name xsis)
 
 # Setup
-git clone https://github.com/christianwibi/Movie-RESTFull.git
-cd Movie-RESTFull
+git clone https://github.com/christianwibi/Movie-RESTFull.git<br/>
+cd Movie-RESTFull<br/>
 composer install<br/>
 cp .env.example .env<br/>
 php artisan migrate<br/>
