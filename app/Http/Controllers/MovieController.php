@@ -31,10 +31,10 @@ class MovieController extends Controller
 
     public function getDetail($id)
     {
-        if(!$id) return response()->json(["error" => "Harap masukkan id"]);
+        if(!$id) return response()->json(["success"=> "false","error" => "Harap masukkan id"], 422);
         
         $data = Movie_model::where("id",$id)->first();
-        if(!$data) return response()->json(["error" => "Movie tidak ditemukan"]);
+        if(!$data) return response()->json(["success"=> "false","error" => "Movie tidak ditemukan"], 422);
         $detail = [
             "id" => $data->id,
             "title" => $data->title,
@@ -49,25 +49,31 @@ class MovieController extends Controller
 
     public function addMovie(Request $request){
         $validator = Validator::make($request->all(), [
+            'id' => 'bail|required|integer|unique:movies,id',
             'title' => 'bail|required|max:100',
             'description' => 'bail|required|max:255',
-            'rating' => 'bail|required|numeric|max:10'
+            'rating' => 'bail|required|numeric|max:10',
+            'created_at' => 'bail|required|date',
+            'updated_at' => 'bail|date',
         ]);
         if ($validator->fails()) {
-            return response()->json(["error" => $validator->errors()->first()], 422);
+            return response()->json(["success"=> "false","error" => $validator->errors()->first()], 422);
         }
         try {
             DB::beginTransaction();
 
             $movie = new Movie_model;
+            $movie->id = $request->input("id");
             $movie->title = $request->input("title");
             $movie->description = $request->input("description");
             $movie->rating = $request->input("rating");
+            $movie->created_at = $request->input("created_at");
+            $movie->updated_at = $request->input("updated_at");
             $movie->save();
             
             $response = [
                 'success' => true,
-                'data_saved' =>$movie
+                'data_saved' => $movie
             ];
             DB::commit();
 
@@ -76,7 +82,7 @@ class MovieController extends Controller
         catch(\Exception $e) {
             DB::rollback();
             \Log::info($e);
-            return response()->json(["error" => "Insert gagal"]);
+            return response()->json(["success"=> "false","error" => "Insert gagal"], 422);
         }
     }
 
@@ -84,16 +90,18 @@ class MovieController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'bail|required|max:100',
             'description' => 'bail|required|max:255',
-            'rating' => 'bail|required|numeric|max:10'
+            'rating' => 'bail|required|numeric|max:10',
+            'created_at' => 'bail|required|date',
+            'updated_at' => 'bail|date',
         ]);
         if ($validator->fails()) {
-            return response()->json(["error" => $validator->errors()->first()], 422);
+            return response()->json(["success"=> "false","error" => $validator->errors()->first()], 422);
         }
         
-        if(!$id) return response()->json(["error" => "Harap masukkan id"]);
+        if(!$id) return response()->json(["success"=> "false","error" => "Harap masukkan id"], 422);
         
         $movie = Movie_model::where("id",$id)->first();
-        if(!$movie) return response()->json(["error" => "Movie tidak ditemukan"]);
+        if(!$movie) return response()->json(["success"=> "false","error" => "Movie tidak ditemukan"], 422);
 
         try {
             DB::beginTransaction();
@@ -101,6 +109,8 @@ class MovieController extends Controller
             $movie->title = $request->input("title");
             $movie->description = $request->input("description");
             $movie->rating = $request->input("rating");
+            $movie->created_at = $request->input("created_at");
+            $movie->updated_at = $request->input("updated_at");
             $movie->save();
             
             $response = [
@@ -114,16 +124,19 @@ class MovieController extends Controller
         catch(\Exception $e) {
             DB::rollback();
             \Log::info($e);
-            return response()->json(["error" => "Update gagal"]);
+            return response()->json(["success"=> "false","error" => "Update gagal"], 422);
         }
     }
 
     public function deleteMovie($id){
-        if(!$id) return response()->json(["error" => "Harap masukkan id"]);
+        if(!$id) return response()->json(["success"=> "false","error" => "Harap masukkan id"], 422);
+        $movie=Movie_model::find($id);
+        if(!$movie) return response()->json(["success"=> "false","error" => "Movie tidak ditemukan"], 422);
+
         try {
             DB::beginTransaction();
 
-            Movie_model::find($id)->delete();
+            $movie->delete();
             
             $response = [
                 'success' => true,
@@ -137,7 +150,7 @@ class MovieController extends Controller
         catch(\Exception $e) {
             DB::rollback();
             \Log::info($e);
-            return response()->json(["error" => "Delete gagal"]);
+            return response()->json(["success"=> "false","error" => "Delete gagal"], 422);
         }
     }
 }
