@@ -4,7 +4,7 @@ This application is created using laravel 9 and database mySQL, so make sure to 
 # Requirements
 PHP ^7.3<br/>
 composer<br/>
-mySQL
+mySQL (with db name xsis)
 
 # Setup
 composer install<br/>
@@ -20,5 +20,5 @@ Note for POST, PATCH, and DELETE methods require X-CSRF-TOKEN.
 So if you hit it from external, need to add X-CSRF-TOKEN the in the header: <br/>
 add key X-CSRF-TOKEN<br/>
 add value {TOKEN}<br/>
-You can get TOKEN from API: 
+You can get TOKEN by hit API: 
 GET http://127.0.0.1:8000/token
