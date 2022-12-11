@@ -1,5 +1,5 @@
 # Introduction
-This application is created using laravel 9 and database mySQL, so make sure to install php version ^7.3 and prepare the setup below.
+This application is created using laravel 8.75 and database mySQL, so make sure to install php version ^7.3 and prepare the setup below.
 
 # Requirements
 PHP ^7.3<br/>
