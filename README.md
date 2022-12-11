@@ -2,14 +2,14 @@
 This application is created using laravel 9 and database mySQL, so make sure to install php version ^7.3 and prepare the setup below.
 
 # Requirements
-PHP ^7.3
-composer
+PHP ^7.3<br/>
+composer<br/>
 mySQL
 
 # Setup
-composer install
-cp .env.example .env
-php artisan migrate
+composer install<br/>
+cp .env.example .env<br/>
+php artisan migrate<br/>
 php artisan serve (to run server)
 
 # Tests
@@ -17,8 +17,8 @@ php artisan test
 
 # Notes
 Note for POST, PATCH, and DELETE methods require X-CSRF-TOKEN.
-So if you hit it from external, need to add X-CSRF-TOKEN the in the header
-add key X-CSRF-TOKEN
-add value {TOKEN}
+So if you hit it from external, need to add X-CSRF-TOKEN the in the header.
+add key X-CSRF-TOKEN,
+add value {TOKEN},
 You can get TOKEN from API: 
 GET http://127.0.0.1:8000/token
