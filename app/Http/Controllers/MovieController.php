@@ -29,18 +29,21 @@ class MovieController extends Controller
         return response()->json($datum, 200);
     }
 
-    public function getDetail($id)
+    public function getDetail($title)
     {
-        if(!$id) return response()->json(["success"=> "false","error" => "Harap masukkan id"], 422);
+        if(!$title) return response()->json(["success"=> "false","error" => "Harap masukkan id"], 422);
         
-        $data = Movie_model::where("id",$id)->first();
+        $data = Movie_model::whereRaw("title like '%".$title."%'")->first();
         if(!$data) return response()->json(["success"=> "false","error" => "Movie tidak ditemukan"], 422);
+
+        $src = 'data:image/png;base64,'.$data->image;
+
         $detail = [
             "id" => $data->id,
             "title" => $data->title,
             "description" => $data->description,
             "rating" => $data->rating,
-            "image" => $data->image ? $data->image : "",
+            "image" => $data->image ? '<img src="'.$src.'">' : "",
             "created_at" => date("Y-m-d H:i:s", strtotime($data->created_at)),
             "updated_at" => date("Y-m-d H:i:s", strtotime($data->updated_at))
         ];
@@ -55,18 +58,23 @@ class MovieController extends Controller
             'rating' => 'bail|required|numeric|max:10',
             'created_at' => 'bail|required|date',
             'updated_at' => 'bail|date',
+            'image' => 'max:50'
         ]);
         if ($validator->fails()) {
             return response()->json(["success"=> "false","error" => $validator->errors()->first()], 422);
         }
         try {
             DB::beginTransaction();
-
+            $image="";
+            if ($request->hasFile('image')) {
+                $image = base64_encode(file_get_contents($request->file('image')));
+            }
             $movie = new Movie_model;
             $movie->id = $request->input("id");
             $movie->title = $request->input("title");
             $movie->description = $request->input("description");
             $movie->rating = $request->input("rating");
+            $movie->image = $image;
             $movie->created_at = $request->input("created_at");
             $movie->updated_at = $request->input("updated_at");
             $movie->save();
