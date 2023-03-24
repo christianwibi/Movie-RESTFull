@@ -15,15 +15,12 @@ class Movies extends Migration
     {
         if (!Schema::hasTable('movies')) {
             Schema::create('movies', function (Blueprint $table) {
-                $table->integer("id");
+                $table->integer("id")->autoIncrement();
                 $table->string('title',100);
                 $table->string('description',255);
                 $table->float('rating', 3, 1); 	
-                $table->text('image')->default("");
-                $table->dateTime('created_at');
-                $table->dateTime('updated_at')->nullable();
-
-                $table->primary('id');	
+                $table->binary('image');
+                $table->timestamps();
             });
         }
     }

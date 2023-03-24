@@ -18,7 +18,7 @@ class MovieController extends Controller
                     "title" => $item->title,
                     "description" => $item->description,
                     "rating" => $item->rating,
-                    "image" => $item->image ? $item->image : "",
+                    "image" => $item->image ? '<img src="data:image/png;base64,'.base64_encode($item->image).'">' : "",
                     "created_at" => date("Y-m-d H:i:s", strtotime($item->created_at)),
                     "updated_at" => date("Y-m-d H:i:s", strtotime($item->updated_at))
                 ];
@@ -36,7 +36,7 @@ class MovieController extends Controller
         $data = Movie_model::whereRaw("title like '%".$title."%'")->first();
         if(!$data) return response()->json(["success"=> "false","error" => "Movie tidak ditemukan"], 422);
 
-        $src = 'data:image/png;base64,'.$data->image;
+        $src = 'data:image/png;base64,'.base64_encode($data->image);
 
         $detail = [
             "id" => $data->id,
@@ -52,13 +52,10 @@ class MovieController extends Controller
 
     public function addMovie(Request $request){
         $validator = Validator::make($request->all(), [
-            'id' => 'bail|required|integer|unique:movies,id',
             'title' => 'bail|required|max:100',
             'description' => 'bail|required|max:255',
             'rating' => 'bail|required|numeric|max:10',
-            'created_at' => 'bail|required|date',
-            'updated_at' => 'bail|date',
-            'image' => 'max:50'
+            'image' => 'bail|image|mimes:png|max:1024'
         ]);
         if ($validator->fails()) {
             return response()->json(["success"=> "false","error" => $validator->errors()->first()], 422);
@@ -70,13 +67,10 @@ class MovieController extends Controller
                 $image = base64_encode(file_get_contents($request->file('image')));
             }
             $movie = new Movie_model;
-            $movie->id = $request->input("id");
             $movie->title = $request->input("title");
             $movie->description = $request->input("description");
             $movie->rating = $request->input("rating");
             $movie->image = $image;
-            $movie->created_at = $request->input("created_at");
-            $movie->updated_at = $request->input("updated_at");
             $movie->save();
             
             $response = [
@@ -99,8 +93,7 @@ class MovieController extends Controller
             'title' => 'bail|required|max:100',
             'description' => 'bail|required|max:255',
             'rating' => 'bail|required|numeric|max:10',
-            'created_at' => 'bail|required|date',
-            'updated_at' => 'bail|date',
+            'image' => 'bail|image|mimes:png|max:1024'
         ]);
         if ($validator->fails()) {
             return response()->json(["success"=> "false","error" => $validator->errors()->first()], 422);
@@ -113,12 +106,15 @@ class MovieController extends Controller
 
         try {
             DB::beginTransaction();
-
+            
+            $image="";
+            if ($request->hasFile('image')) {
+                $image = base64_encode(file_get_contents($request->file('image')));
+            }
             $movie->title = $request->input("title");
             $movie->description = $request->input("description");
             $movie->rating = $request->input("rating");
-            $movie->created_at = $request->input("created_at");
-            $movie->updated_at = $request->input("updated_at");
+            $movie->image = $image;
             $movie->save();
             
             $response = [
